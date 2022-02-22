@@ -22,15 +22,15 @@ def check_lessons(devman_token, poll_timeout):
 def send_lesson_tg(bot, chat_id, lessons):
     text = ''
     for lesson in lessons:
-        text = (
+        text += (
             f'У вас проверили работу ["{lesson["lesson_title"]}"]'
             f'({lesson["lesson_url"]})\n'
         )
         if lesson['is_negative']:
-            text += 'К сожалению в работе нашлись ошибки.'
+            text += 'К сожалению в работе нашлись ошибки.\n'
         else:
-            text += 'Преподавателю всё понравилось, можно приступать к следующему уроку!'
-        bot.send_message(chat_id=chat_id, text=text, parse_mode='markdown')
+            text += 'Преподавателю всё понравилось, можно приступать к следующему уроку!\n'
+    bot.send_message(chat_id=chat_id, text=text, parse_mode='markdown')
 
 
 def main():
