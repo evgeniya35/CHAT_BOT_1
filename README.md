@@ -24,6 +24,7 @@ pip install -r requirements.txt
 ```
 DEVMAN_TOKEN={ВашДевманТокен}
 TG_TOKEN={ВашТелеграмТокен}
+ADMIN_TG_TOKEN={ТелеграмТокенБотаЛоггера}
 TG_CHAT_ID={ТелеграмЧатИД}
 ```
 

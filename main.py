@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import token
 import logging
 import os
 import time
@@ -8,6 +9,17 @@ import telegram
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__file__)
+
+
+class TelegramLogsHandler(logging.Handler):
+    def __init__(self, tg_bot, chat_id):
+        super().__init__()
+        self.chat_id = chat_id
+        self.tg_bot = tg_bot
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
 
 
 def check_lessons(devman_token, poll_timeout):
@@ -41,8 +53,13 @@ def main():
     load_dotenv()
     devman_token = os.environ.get('DEVMAN_TOKEN')
     tg_token = os.environ.get('TG_TOKEN')
+    admin_tg_token = os.environ.get('ADMIN_TG_TOKEN')
     tg_chat_id = os.environ.get('TG_CHAT_ID')
+    
     bot = telegram.Bot(token=tg_token)
+    admin_bot = telegram.Bot(token=admin_tg_token)
+    logger.addHandler(TelegramLogsHandler(admin_bot, tg_chat_id))
+    logger.info('Бот запущен')
     poll_timeout = None
     while True:
         try:
@@ -50,16 +67,16 @@ def main():
             if change_lessons['status'] == 'found':
                 poll_timeout = change_lessons['last_attempt_timestamp']
                 send_lesson_tg(bot, tg_chat_id, change_lessons["new_attempts"])
-                logger.info(f'Found {change_lessons["new_attempts"]}')
                 continue
             poll_timeout = change_lessons['timestamp_to_request']
         except requests.exceptions.Timeout:
-            logger.info(f'Request timeout')
             continue
         except requests.exceptions.ConnectionError:
-            logger.info(f'Connection error')
             time.sleep(10)
             continue
+        except Exception as error:
+            logger.info('Ошибка:')
+            logger.exception(error)
 
 
 if __name__ == '__main__':
